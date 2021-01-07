@@ -3,17 +3,10 @@ from enum import Enum
 
 
 @dataclass
-class StudentSex(Enum):
-    MALE = "M"
-    FEMALE = "F"
-    OTHER = "O"
-
-
-@dataclass
 class StudentData:
     id: int
     name: str
-    sex: StudentSex
+    sex: str
     age: int
     qq: int
     phone: int

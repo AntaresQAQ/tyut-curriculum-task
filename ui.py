@@ -1,17 +1,18 @@
-from tkinter import Tk, Entry, Label, ttk, Button, Scrollbar
-
-from datatypes import UIConfig
+from tkinter import Tk, Entry, Label, ttk, Button, Scrollbar, EventType
+from typing import Callable
+from datatypes import UIConfig, StudentData
 
 
 class UI:
     def __init__(self):
-        self.__window = Tk()
+        self.__window: Tk = Tk()
         self.configures = UIConfig(title="学生信息管理系统", width=500, height=600)
+        self.__now_student_id = 0
         self.__load_config()
         self.__create_entrys()
+        self.__create__selections()
         self.__create_buttons()
         self.__create_table()
-        self.__window.mainloop()
 
     def __load_config(self) -> None:
         self.__window["width"] = self.configures.width
@@ -20,44 +21,167 @@ class UI:
         self.__window.resizable(0, 0)
 
     def __create_entrys(self) -> None:
-        Label(self.__window, text="姓名", width=5).place(x=10, y=10)
-        self.__name_entry = Entry(self.__window, width=20).place(x=60, y=10)
-        Label(self.__window, text="性别", width=5).place(x=10, y=40)
-        self.__sex_entry = Entry(self.__window, width=20).place(x=60, y=40)
-        Label(self.__window, text="年龄", width=5).place(x=10, y=70)
-        self.__age_entry = Entry(self.__window, width=20).place(x=60, y=70)
+        self.__name_entry: Entry = Entry(self.__window)
+        self.__age_entry: Entry = Entry(self.__window)
+        self.__major_entry: Entry = Entry(self.__window)
+        self.__phone_entry: Entry = Entry(self.__window)
+        self.__qq_entry: Entry = Entry(self.__window)
 
-        Label(self.__window, text="专业", width=5).place(x=250, y=10)
-        self.__major_entry = Entry(self.__window, width=20).place(x=300, y=10)
-        Label(self.__window, text="电话", width=5).place(x=250, y=40)
-        self.__phone_entry = Entry(self.__window, width=20).place(x=300, y=40)
-        Label(self.__window, text="QQ", width=5).place(x=250, y=70)
-        self.__qq_entry = Entry(self.__window, width=20).place(x=300, y=70)
+        Label(self.__window, text="姓名").place(x=10, y=10, width=50)
+        self.__name_entry.place(x=60, y=10, width=180)
+        # Sex is a ComboBox
+        Label(self.__window, text="年龄").place(x=10, y=70, width=50)
+        self.__age_entry.place(x=60, y=70, width=180)
+
+        Label(self.__window, text="专业").place(x=260, y=10, width=50)
+        self.__major_entry.place(x=310, y=10, width=180)
+        Label(self.__window, text="电话").place(x=260, y=40, width=50)
+        self.__phone_entry.place(x=310, y=40, width=180)
+        Label(self.__window, text="QQ").place(x=260, y=70, width=50)
+        self.__qq_entry.place(x=310, y=70, width=180)
+
+    def __create__selections(self):
+        Label(self.__window, text="性别").place(x=10, y=40, width=50)
+        self.__sex_selections: ttk.Combobox = ttk.Combobox(self.__window)
+        self.__sex_selections["values"] = ("男", "女", "其他")
+        self.__sex_selections["state"] = "readonly"
+        self.__sex_selections.current(0)
+        self.__sex_selections.place(x=60, y=40, width=180)
 
     def __create_buttons(self) -> None:
-        self.__submit_button = Button(self.__window, text="提交", width=5).place(x=50, y=120)
-        self.__clear_button = Button(self.__window, text="清空", width=5).place(x=200, y=120)
-        self.__remove_button = Button(self.__window, text="删除", width=5).place(x=350, y=120)
+        self.__submit_button: Button = Button(self.__window, text="提交", width=5)
+        self.__submit_button.place(x=50, y=120)
+        self.__clear_button: Button = Button(self.__window, text="清空", width=5)
+        self.__clear_button.bind("<Button-1>", self.__clear_all)
+        self.__clear_button.place(x=200, y=120)
+        self.__remove_button: Button = Button(self.__window, text="删除", width=5)
+        self.__remove_button.place(x=350, y=120)
 
     def __create_table(self) -> None:
-        self.__student_list = ttk.Treeview(self.__window)
-        self.__student_list['show'] = 'headings'
-        self.__student_list["columns"] = ("id", "name", "age", "sex", "major", "phone", "qq")
-        self.__student_list["displaycolumns"] = ("name", "age", "sex", "major", "phone", "qq")
-        self.__student_list.column("name", width=85)
-        self.__student_list.column("age", width=40)
-        self.__student_list.column("sex", width=40)
-        self.__student_list.column("major", width=90)
-        self.__student_list.column("phone", width=110)
-        self.__student_list.column("qq", width=110)
-        self.__student_list.heading("name", text="姓名")
-        self.__student_list.heading("age", text="年龄")
-        self.__student_list.heading("sex", text="性别")
-        self.__student_list.heading("major", text="专业")
-        self.__student_list.heading("phone", text="电话")
-        self.__student_list.heading("qq", text="QQ")
-        self.__student_list.place(x=10, y=180, height=400)
+        self.__student_list_table: ttk.Treeview = ttk.Treeview(self.__window)
+        self.__student_list_table['show'] = 'headings'
+        self.__student_list_table["columns"] = ("id", "name", "age", "sex", "major", "phone", "qq")
+        self.__student_list_table["displaycolumns"] = ("name", "age", "sex", "major", "phone", "qq")
+        self.__student_list_table.column("name", width=85)
+        self.__student_list_table.column("age", width=40)
+        self.__student_list_table.column("sex", width=40)
+        self.__student_list_table.column("major", width=90)
+        self.__student_list_table.column("phone", width=110)
+        self.__student_list_table.column("qq", width=110)
+        self.__student_list_table.heading("name", text="姓名")
+        self.__student_list_table.heading("age", text="年龄")
+        self.__student_list_table.heading("sex", text="性别")
+        self.__student_list_table.heading("major", text="专业")
+        self.__student_list_table.heading("phone", text="电话")
+        self.__student_list_table.heading("qq", text="QQ")
+        self.__student_list_table.place(x=10, y=180, height=400)
 
-        table_croll = Scrollbar(self.__window, orient='vertical', command=self.__student_list.yview)
-        table_croll.place(x=475, y=180, width=15, height=400)
-        self.__student_list.configure(yscrollcommand=table_croll)
+        table_scroll = Scrollbar(self.__window,
+                                 orient='vertical',
+                                 command=self.__student_list_table.yview)
+        table_scroll.place(x=475, y=180, width=15, height=400)
+        self.__student_list_table.configure(yscrollcommand=table_scroll)
+
+    def __clear_all(self, event: EventType.ButtonPress = None):
+        self.__now_student_id = 0
+        self.__sex_selections.current(0)
+        self.__name_entry.delete(0, "end")
+        self.__age_entry.delete(0, "end")
+        self.__phone_entry.delete(0, "end")
+        self.__major_entry.delete(0, "end")
+        self.__qq_entry.delete(0, "end")
+        self.__student_list_table.selection_remove(self.__student_list_table.selection())
+
+    def __get_entrys_data(self):
+        try:
+            name = self.__name_entry.get()
+            age = int(self.__age_entry.get())
+            raw_sex = self.__sex_selections.get()
+            if raw_sex == "男":
+                sex = "M"
+            elif raw_sex == "女":
+                sex = "F"
+            else:
+                sex = "O"
+            major = self.__major_entry.get()
+            phone = int(self.__phone_entry.get())
+            qq = int(self.__qq_entry.get())
+            return StudentData(
+                id=self.__now_student_id,
+                name=name,
+                sex=sex,
+                age=age,
+                major=major,
+                phone=phone,
+                qq=qq
+            )
+        except Exception as ex:
+            print(ex)
+            return None
+
+    def __update_entrys_data(self, student: StudentData):
+        self.__name_entry.delete(0, "end")
+        self.__age_entry.delete(0, "end")
+        self.__phone_entry.delete(0, "end")
+        self.__major_entry.delete(0, "end")
+        self.__qq_entry.delete(0, "end")
+        self.__now_student_id = student.id
+        self.__name_entry.insert(0, student.name)
+        self.__age_entry.insert(0, student.age)
+        self.__major_entry.insert(0, student.major)
+        self.__qq_entry.insert(0, student.qq)
+        self.__phone_entry.insert(0, student.phone)
+        if student.sex == "M":
+            self.__sex_selections.current(0)
+        elif student.sex == "F":
+            self.__sex_selections.current(1)
+        else:
+            self.__sex_selections.current(2)
+
+    def bind_remove_button(self, callback: Callable[[StudentData], None]):
+        def handle(event: EventType.ButtonPress):
+            student = self.__get_entrys_data()
+            if student: callback(student)
+            self.__clear_all()
+
+        self.__remove_button.bind("<Button-1>", handle)
+
+    def bind_submit_button(self, callback: Callable[[StudentData], None]):
+        def handle(event: EventType.ButtonPress):
+            student = self.__get_entrys_data()
+            if student: callback(student)
+
+        self.__submit_button.bind("<Button-1>", handle)
+
+    def bind_table_selection(self, callback: Callable[[int], StudentData]):
+        def handle(event: EventType.ButtonRelease):
+            selection = self.__student_list_table.selection()[0]
+            item = self.__student_list_table.item(selection, "values")
+            student = callback(int(item[0]))
+            self.__update_entrys_data(student)
+
+        self.__student_list_table.bind("<ButtonRelease-1>", handle)
+
+    def update_table(self, students: [StudentData]):
+        for item in self.__student_list_table.get_children():
+            self.__student_list_table.delete(item)
+
+        for item in students:
+            if item.sex == "M":
+                sex = "男"
+            elif item.sex == "F":
+                sex = "女"
+            else:
+                sex = "其他"
+            self.__student_list_table.insert("", "end", values=[
+                item.id,
+                item.name,
+                item.age,
+                sex,
+                item.major,
+                item.phone,
+                item.qq
+            ])
+
+    def loop(self):
+        self.__window.mainloop()

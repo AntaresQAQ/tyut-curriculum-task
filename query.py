@@ -49,25 +49,27 @@ class StudentQuery:
                 student.major,
                 student.id
             ))
+        self.__conn.commit()
 
     def delete_student_by_id(self, student_id: int) -> None:
         self.__conn.execute("DELETE FROM students WHERE id=?", (student_id,))
+        self.__conn.commit()
 
     def find_student_by_id(self, student_id) -> StudentData:
         result = self.__conn.execute(
-            "SELECT (name,age,sex,qq,phone,major) FROM students WHERE id=?", (student_id,)).fetchone()
+            "SELECT name,age,sex,qq,phone,major FROM students WHERE id=?", (student_id,)).fetchone()
         return StudentData(
             id=student_id,
-            name=result[0][0],
-            age=result[0][1],
-            sex=result[0][2],
-            qq=result[0][3],
-            phone=result[0][4],
-            major=result[0][5]
+            name=result[0],
+            age=result[1],
+            sex=result[2],
+            qq=result[3],
+            phone=result[4],
+            major=result[5]
         )
 
     def find_all_students(self) -> [StudentData]:
-        result = self.__conn.execute("SELECT (id,name,age,sex,qq,phone,major) FROM students").fetchall()
+        result = self.__conn.execute("SELECT id,name,age,sex,qq,phone,major FROM students").fetchall()
         return list(map(lambda item: StudentData(
             id=item[0],
             name=item[1],
