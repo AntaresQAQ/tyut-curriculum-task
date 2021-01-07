@@ -15,8 +15,8 @@ class Application:
         del self.query
         del self.ui
 
-    def __delete_student(self, student: StudentData):
-        self.query.delete_student_by_id(student.id)
+    def __delete_student(self, student_id):
+        self.query.delete_student_by_id(student_id)
         self.__update_table()
 
     def __update_student(self, student: StudentData):

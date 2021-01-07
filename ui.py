@@ -1,4 +1,4 @@
-from tkinter import Tk, Entry, Label, ttk, Button, Scrollbar, EventType
+from tkinter import Tk, Entry, Label, ttk, Button, Scrollbar, EventType, messagebox
 from typing import Callable
 from datatypes import UIConfig, StudentData
 
@@ -95,7 +95,14 @@ class UI:
     def __get_entrys_data(self):
         try:
             name = self.__name_entry.get()
-            age = int(self.__age_entry.get())
+            if len(name) == 0:
+                self.show_error_msg("格式错误", "名字不能为空")
+                raise ValueError("Name Can Not Be Empty")
+            try:
+                age = int(self.__age_entry.get())
+            except ValueError as e:
+                self.show_error_msg("格式错误", "年龄必须为数字")
+                raise e
             raw_sex = self.__sex_selections.get()
             if raw_sex == "男":
                 sex = "M"
@@ -104,8 +111,18 @@ class UI:
             else:
                 sex = "O"
             major = self.__major_entry.get()
-            phone = int(self.__phone_entry.get())
-            qq = int(self.__qq_entry.get())
+            try:
+                raw_phone = self.__phone_entry.get()
+                if len(raw_phone) != 11: raise ValueError("Phone Number Length Error")
+                phone = int(raw_phone)
+            except ValueError as e:
+                self.show_error_msg("格式错误", "电话号码必须为11位数字")
+                raise e
+            try:
+                qq = int(self.__qq_entry.get())
+            except ValueError as e:
+                self.show_error_msg("格式错误", "QQ号码必须为数字")
+                raise e
             return StudentData(
                 id=self.__now_student_id,
                 name=name,
@@ -115,7 +132,7 @@ class UI:
                 phone=phone,
                 qq=qq
             )
-        except Exception as ex:
+        except ValueError as ex:
             print(ex)
             return None
 
@@ -138,10 +155,15 @@ class UI:
         else:
             self.__sex_selections.current(2)
 
-    def bind_remove_button(self, callback: Callable[[StudentData], None]):
+    def show_error_msg(self, title, msg):
+        t = messagebox.showerror(title, msg)
+        self.__submit_button.grab_release()
+        self.__remove_button.grab_release()
+        self.__clear_button.grab_release()
+
+    def bind_remove_button(self, callback: Callable[[int], None]):
         def handle(event: EventType.ButtonPress):
-            student = self.__get_entrys_data()
-            if student: callback(student)
+            if self.__now_student_id: callback(self.__now_student_id)
             self.__clear_all()
 
         self.__remove_button.bind("<Button-1>", handle)
@@ -150,13 +172,15 @@ class UI:
         def handle(event: EventType.ButtonPress):
             student = self.__get_entrys_data()
             if student: callback(student)
+            self.__clear_all()
 
         self.__submit_button.bind("<Button-1>", handle)
 
     def bind_table_selection(self, callback: Callable[[int], StudentData]):
         def handle(event: EventType.ButtonRelease):
-            selection = self.__student_list_table.selection()[0]
-            item = self.__student_list_table.item(selection, "values")
+            selections = self.__student_list_table.selection()
+            if len(selections) == 0: return
+            item = self.__student_list_table.item(selections[0], "values")
             student = callback(int(item[0]))
             self.__update_entrys_data(student)
 
