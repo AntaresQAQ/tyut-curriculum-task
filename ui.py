@@ -80,7 +80,7 @@ class UI:
                                  orient='vertical',
                                  command=self.__student_list_table.yview)
         table_scroll.place(x=475, y=180, width=15, height=400)
-        self.__student_list_table.configure(yscrollcommand=table_scroll)
+        self.__student_list_table.configure(yscrollcommand=table_scroll.set)
 
     def __clear_all(self, event: EventType.ButtonPress = None):
         self.__now_student_id = 0
