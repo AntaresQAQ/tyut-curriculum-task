@@ -157,9 +157,6 @@ class UI:
 
     def show_error_msg(self, title, msg):
         messagebox.showerror(title, msg)
-        self.__submit_button.grab_release()
-        self.__remove_button.grab_release()
-        self.__clear_button.grab_release()
 
     def bind_remove_button(self, callback: Callable[[int], None]):
         def handle(event: EventType.ButtonPress):
