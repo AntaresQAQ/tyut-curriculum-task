@@ -156,7 +156,7 @@ class UI:
             self.__sex_selections.current(2)
 
     def show_error_msg(self, title, msg):
-        t = messagebox.showerror(title, msg)
+        messagebox.showerror(title, msg)
         self.__submit_button.grab_release()
         self.__remove_button.grab_release()
         self.__clear_button.grab_release()
